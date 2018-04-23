@@ -1,0 +1,22 @@
+$openSans: '../../fonts/open-sans';
+
+/* open-sans-300 - latin */
+@include font-face(Open Sans, '#{$openSans}/open-sans-v15-latin-300', 300, normal,'Open Sans Light','OpenSans-Light');
+/* open-sans-300italic - latin */
+@include font-face(Open Sans, '#{$openSans}/open-sans-v15-latin-300italic', 300, italic,'Open Sans Light Italic','OpenSans-LightItalic');
+/* open-sans-regular - latin */
+@include font-face(Open Sans, '#{$openSans}/open-sans-v15-latin-regular', 400, normal,'Open Sans Regular','OpenSans-Regular');
+/* open-sans-italic - latin */
+@include font-face(Open Sans, '#{$openSans}/open-sans-v15-latin-italic', 400, italic,'Open Sans Italic','OpenSans-Italic');
+/* open-sans-600 - latin */
+@include font-face(Open Sans, '#{$openSans}/open-sans-v15-latin-600', 600, normal,'Open Sans SemiBold','OpenSans-SemiBold');
+/* open-sans-600italic - latin */
+@include font-face(Open Sans, '#{$openSans}/open-sans-v15-latin-600italic', 600, italic,'Open Sans SemiBold Italic','OpenSans-SemiBoldItalic');
+/* open-sans-700 - latin */
+@include font-face(Open Sans, '#{$openSans}/open-sans-v15-latin-700', 700, normal,'Open Sans Bold','OpenSans-Bold');
+/* open-sans-700italic - latin */
+@include font-face(Open Sans, '#{$openSans}/open-sans-v15-latin-700italic', 700, italic,'Open Sans Bold Italic','OpenSans-BoldItalic');
+/* open-sans-800 - latin */
+@include font-face(Open Sans, '#{$openSans}/open-sans-v15-latin-800', 800, normal,'Open Sans ExtraBold','OpenSans-ExtraBold');
+/* open-sans-800italic - latin */
+@include font-face(Open Sans, '#{$openSans}/open-sans-v15-latin-800italic', 800, italic,'Open Sans ExtraBold Italic','OpenSans-ExtraBoldItalic');
