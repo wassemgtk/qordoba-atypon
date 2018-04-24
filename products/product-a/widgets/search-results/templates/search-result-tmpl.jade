@@ -1,0 +1,188 @@
+- var pages = data.search.hitsLength / data.search.pageSize
+- var rest = data.search.hitsLength % data.search.pageSize
+if rest > 0
+    - pages++
+- var resultFrom = 1 + (data.search.startPage) * (data.search.pageSize)
+- var resultTo = resultFrom + data.search.pageSize -1
+- var classes = "search-result"
+- var alertTimes = {alerts: ['Never', 'Daily', 'Weekly', 'Monthly']};
+if (data.serviceName == "doSearch")
+    - classes = "search-result doSearch"
+if (data.serviceName == "showPublications")
+    - classes = "search-result showPublications"
+
+div(class= classes)
+    block searchResultTop
+        block searchResultTabs
+
+        div.search-result__follow.clearfix
+            if (data.serviceName == "doSearch")
+                div.pull-left.search__result.search__result--space
+                    span.result__count !{data.search.hitsLength}
+                    span.result__sep results for
+                    span.result__suffix !{data.widgetData.refineSearch.searchIn[0].searchTerm}
+                div.pull-right.search__follow
+                    .search__follow__item
+                        a#saveSearchTriggerButton.search__follow__icon(href='#saveSearchDialog', role='button', data-toggle='modal', data-target='#saveSearchDialog', aria-label='Click here to save your search', title='Save Search')
+                            i.icon-save-search(aria-hidden="true")
+                            block searchResultFollowLabel
+                                span.search__follow__label Save search
+
+                        span.hidden.error.saveSearchMsg
+                            | Failed to save your search, try again later
+                        span.hidden.success.saveSearchMsg
+                            | Search has been saved
+                            a(href='/search/saved')  (Edit)
+
+                    block searchResultRss
+                        .search__follow__item
+                            a.search__follow__icon(href=data.search.searchFeed.linkHref title=data.search.searchFeed.linkTitle name="RSSFeed" class="RSS controlLinks" role="button")
+                                i.icon-Rss(aria-hidden="true")
+                                span.search__follow__label RSS
+
+                .ux-modal-container.search__modal
+                    #saveSearchDialog.modal
+                        .modal__dialog
+                            .modal__header
+                                button.close(type='button', data-dismiss='modal')
+                                    i.icon-close_thin(aria-hidden='true')
+                                h2 Save this search
+                            .modal__body
+                                if data.isLoggedIn
+                                    form(action='/action/doSaveSearch', name='frmSaveSearch', method='post')
+                                        if(data.saveSearchParams)
+                                            each item,i  in data.saveSearchParams
+                                                each value,i  in item.value
+                                                    input(type='hidden', name=item.name, value= value)
+                                        input(type='hidden', name='perform', value='save')
+                                        input(type='hidden', name='ajax', value='true')
+                                        input(type='hidden', name='dispSavedSearches', value='true')
+                                        .input-group
+                                            label.hidden(for='SSName') Name:
+                                            input.search-term(autofocus='true', type='text', name='saveSearchName', value='', size='15', placeholder=' Enter search name')
+
+                                        h4 Alert me to new results:
+                                        .input-group
+                                            each alertTime, l in alertTimes.alerts
+                                                label
+                                                    input(type='radio', name='alertme', value=alertTime, checked= alertTime == 'Never' ? true : false)
+                                                    span.label-txt !{alertTime}
+
+                                        .saveSearchProgress
+                                        button#newSearchSaveButton.btn(type='submit', name='submit') Save search
+                                else
+                                    p  Please
+                                        a(href="/action/showLogin?uri=" + data.searchParams)  login
+                                        |  to be able to save your searches and receive alerts for new content matching your search criteria.
+    block searchResultTopShowPublications
+        div.search-result__meta
+            div.search-result__meta__top.clearfix
+                div.pull-left.search__result
+                    if (data.serviceName == "showPublications")
+                        span.result__count !{data.search.hitsLength}
+                        span.result__sep results for
+                        span.result__suffix !{data.widgetData.refineSearch.searchIn[0].searchTerm}
+                        a(href="#" class="visible-xs visible-sm pull-right w-slide__btn result__ctrl__filters" data-slide-target="#filter")
+                            i(class="icon-filter_list inline-icon" aria-hidden="true")
+                            span Filters
+                    else
+                        block refineSearch
+                            a.search-result__refine.advanced-search__ctrl.w-slide__btn(href="#" data-slide-target="#advancedSearch" )
+                                span refine search
+                                i(class="icon-section_arrow_d" aria-hidden="true")
+                div.pull-right.search__bottom.clearfix
+                    if (data.serviceName == "doSearch")
+                        a(href = "#" class="visible-xs visible-sm pull-right w-slide__btn result__ctrl__filters" data-slide-target="#filter")
+                            i(class="icon-filter_list inline-icon" aria-hidden="true")
+                            span Filters
+                    //- check if we have result
+                    block sortSearchResult
+                        if (data.widgetData.sortLinks)
+                            | !{pb.render("search-result", "search-result/sort-options", {data: data,thisWidget: thisWidget})}
+
+            if (data.serviceName == "doSearch")
+                div.advanced-search__tabs#advancedSearch
+                    | !{pb.render("search-result", "search-result/extended/ext-tabs", {data: data}, "ux3")}
+
+
+    - var itemNo = data.search.results.length
+
+    block resultInfo
+      if itemNo > 0
+        - var I = 0
+        ul.rlist.search-result__body
+            each item, i in data.search.results
+                li.clearfix.separator.search__item
+                    - I++
+                    div.item__body
+                        div
+                            span.meta__access
+                                if item.content.access == "full" && data.widgetData.displayAccessIcon.displayFullAccess == true
+                                    i.icon-lock_open
+                                if item.content.access == "free" && data.widgetData.displayAccessIcon.displayFreeAccess == true
+                                    i.icon-lock_open
+                                if item.content.access == "open" && data.widgetData.displayAccessIcon.displayOpenAccess == true
+                                    i.icon-lock_open
+                                if item.content.access == "no" && data.widgetData.displayAccessIcon.displayNoAccess == true
+                                    i.icon-lock_outline
+                        div.col-xs-12
+                            h3.meta__title.meta__title__margin
+                                if (item.type == "102")
+                                    a(href= item.content.journalUrl) !{item.content.title}
+                                if (item.type == "103")
+                                    a(href= item.content.bestUrl) !{item.content.title}
+                                if (item.type == "105")
+                                    a(href= item.content.bookurl) !{item.content.title}
+                                if (item.type == "109")
+                                    a(href= item.content.bestUrl) !{item.content.title}
+                            div.meta__info
+                                | !{item.content.contribs}
+                                div.meta__details
+                                    if (item.content.type == "Journal")
+                                       block currentIssueTitle
+                                          | Current Issue:&nbsp;
+                                    if (item.content.latestIssue)
+                                        if (item.content.latestIssue.volume && item.content.latestIssue.issue && item.content.latestIssue.volume)
+                                            a.meta__vol(href=item.content.latestIssue.tocUrl) Volume !{item.content.latestIssue.volume}, Issue !{item.content.latestIssue.issue}
+                                        if (item.content.latestIssue.coverDate && item.content.latestIssue.tocUrl)
+                                            a.meta__date(href= item.content.latestIssue.tocUrl) !{pb.render('date', {date: item.content.latestIssue.coverDate, format: 'dateMonthYearShort'})}
+                                    if (item.content.coverDate)
+                                        span.meta__date !{pb.render('date', {date: item.content.coverDate, format: 'dateMonthYearShort'})}
+                                    if (item.content.edition)
+                                        span.meta__edition !{item.content.edition}
+                                    if (item.content.epubDate)
+                                        span.meta__epubDate !{pb.render('date', {date: item.content.epubDate, format: 'dateMonthYearShort'})}
+                                    if (item.content.group)
+                                        if (item.content.group.volume && item.content.group.issue)
+                                            a.meta__volume(href= item.content.group.tocUrl) Volume !{item.content.group.volume}, Issue !{item.content.group.issue}
+                                        if (item.content.group.serial)
+                                            a.meta__serial(href= item.content.group.serial.title) !{item.content.group.serial.title}
+                                        block searchMetaTitle
+                                            if (item.content.group.title)
+                                                a.meta__title(href= item.content.group.bookLink) !{item.content.group.title}
+                                        if (item.content.group.coverDate)
+                                            a.meta__coverDate(href= item.content.group.bookLink) !{pb.render('date', {date: item.content.group.coverDate, format: 'dateMonthYearShort'})}
+                                if (item.content.issn)
+                                    div.meta__issns ISSN: !{item.content.issn}
+                                if (item.content.eissn)
+                                    div.meta__eissn EISSN: !{item.content.eissn}
+                                if (item.content.eisbn)
+                                    div.meta__eisbn EISBN:  !{item.content.eisbn}
+                                if (item.content.abstract)
+                                    div.accordion
+                                        a(href="#" class="accordion__control" title="show Abstract")
+                                            span Abstract
+                                            i.icon-section_arrow_d(aria-hidden="true")
+                                        div.accordion__content !{item.content.abstract}
+                                if (item.content.description)
+                                    div.accordion
+                                        a(href="#" class="accordion__control" title="show Aim & scope")
+                                            span Aim & scope
+                                            i.icon-section_arrow_d(aria-hidden="true")
+                                        div.accordion__content !{item.content.description}
+      else
+        div.search-result__no-result
+            | !{data.widgetData.textForNoResults}
+
+    block searchResultPager
+        include ./pager-tmpl
