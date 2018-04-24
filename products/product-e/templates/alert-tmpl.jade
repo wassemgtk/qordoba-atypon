@@ -1,0 +1,192 @@
+- var freqs = {"freqs": ["NEVER","DAILY","WEEKLY","MONTHLY"]};
+- var alerts = data.currentPerson.alerts;
+- var hasSubscriptions = (alerts.toc && alerts.toc.length) || (alerts.books && alerts.books.length) || (alerts.citations && alerts.citations.length) || (alerts.title && alerts.title.length) || (alerts.digest && alerts.digest.length) || (alerts.collection && alerts.collection.length) || alerts.custom;
+
+block newContentAlertText
+    if(data && data.currentPerson && data.currentPerson.alerts && data.currentPerson.alerts.toc[0])
+        p To receive alerts when new content is published in the journals or book series listed below, check the box next to each publication you select. TOC alerts are sent immediately after a new issue publishes. Article alerts are sent based on the alert frequency shown below.
+        p.intro-text To change the alert frequency for article-based alerts, select the alert frequency you would like from the drop-down below and click "Submit." Note that if you subscribe to more than one alert, your frequency and format settings will apply to all of your alerts.
+    else
+        p To receive alerts when new content is published in the journals or book series listed below, check the box next to each publication you select. TOC alerts are sent immediately after a new issue publishes. By default, article alerts are sent !{data.currentPerson.alerts.frequency}.
+        p.intro-text To change the alert frequency for article-based alerts, first select the journals you want to be alerted on and then save your selection. Once saved, you can change the default frequency for article-based alerts. Note that if you subscribe to more than one alert, your frequency and format settings will apply to all of your alerts.
+
+if thisWidget.properties && thisWidget.properties.newContentView == 'modifyOnly'
+    form.alert__content(id='frmAlerts' method="post" action="/action/doUpdateAlertSettings")
+        block alert__freq__type
+        if(data && data.currentPerson && data.currentPerson.alerts && data.currentPerson.alerts.frequency)
+            block alert__freq
+                .alert__freq
+                    .input-group.left-side-label
+                        block newContentAlertFormFirstElement1
+                            label Frequency of alerts for article-based alerts
+                            select.jcf(name="period" disabled=!hasSubscriptions title=hasSubscriptions?"":"You must have at least one subscription before you can adjust subscription frequency")
+                                if (!hasSubscriptions)
+                                    option No subscriptions
+                                else
+                                    each freq, l in freqs.freqs
+                                        if data.currentPerson.alerts.frequency == freq
+                                            option(value=freq.charAt(0) selected="selected") !{freq}
+                                        else
+                                            option(value=freq.charAt(0)) !{freq}
+
+        block alertFormats1
+            .alert__format
+                .input-group.left-side-label
+                    label Choose an Email Format:
+                    .input-group.left-side-label
+                        -var checkboxText
+                        if (data.currentPerson && data.currentPerson.alerts && data.currentPerson.alerts.format)
+                            if (data.currentPerson.alerts.format != 'TEXT' && data.currentPerson.alerts.format != 'HTML')
+                                - checkboxText = 'TEXT'
+                            else
+                                - checkboxText = data.currentPerson.alerts.format
+                        else
+                            - checkboxText = 'HTML'
+
+                        label(class="radio--primary")
+                            input#alertFormat_text(type="radio" name="format" value="T" checked=checkboxText == 'TEXT')
+                            span(class="label-txt") Plain Text
+
+                        label(class="radio--primary")
+                            input#alertFormat_html(type="radio" name="format" value="H" checked=checkboxText == 'HTML')
+                            span(class="label-txt") HTML
+        block beforeList
+
+        block alertLists
+            if (data.seriesList)
+                - var itemNo = data.seriesList.length
+                if itemNo > 0
+
+                    if (thisWidget.properties && thisWidget.properties.customHeadingsEnabled)
+                        h5.border-bottom !{thisWidget.properties.bookSeriesAlertsHeading}
+                    else
+                        h5.border-bottom BOOK SERIES ALERTS
+                    ul.rlist.alert__list
+                        li
+                            if (itemNo > 1)
+                                .input-group
+                                    label.checkbox--primary
+                                        input(type='checkbox' name="markall")
+                                        if (thisWidget.properties && thisWidget.properties.customHeadingsEnabled)
+                                            span.label-txt !{thisWidget.properties.selectAllLabel}
+                                        else
+                                            span.label-txt Select All
+
+                        each book, l in data.seriesList
+                            li
+                                .input-group
+                                    label.checkbox--primary
+                                        input(type='checkbox' name="bookSeriesCode" value=book.code)
+                                        span.label-txt
+                                            if(book)
+                                              a(href=book.bookSeriesUrl) !{book.title}
+
+            if (data.journals)
+                - var journalsNo = data.journals.length
+
+                if journalsNo > 0
+                    if (thisWidget.properties && thisWidget.properties.customHeadingsEnabled)
+                        h5.border-bottom !{thisWidget.properties.journalAlertsHeading}
+                    else
+                        h5.profile__heading.border-bottom Journal series alerts
+                    ul.rlist.alert__list
+                        li
+                            if (journalsNo > 1)
+                                .input-group
+                                    label.checkbox--primary
+                                        input(type='checkbox' name="markall")
+                                        if (thisWidget.properties && thisWidget.properties.customHeadingsEnabled)
+                                            span.label-txt !{thisWidget.properties.selectAllLabel}
+                                        else
+                                            span.label-txt Select All
+                        block journalAlertSeries
+                            each journal, l in data.journals
+                                if journal.isVisible && journal.isAlertsEnabled
+                                    li
+                                        .input-group
+                                            label.checkbox--primary
+                                                input(type='checkbox' id=journal.doi name="pubCode" value=journal.code checked=journal.isSubscribedToAlert)
+                                                span.label-txt
+                                                    a(href=journal.journalUrl) !{journal.title}
+        block formButton
+            .form-btn
+                input(type="hidden" name="save" value="save")
+                input(type="hidden" name="referrer" value="/action/showPreferences?menuTab=Alerts")
+                button.btn--inverse.extra-border(type='submit')  SUBMIT
+                button.btn--cancel(type='reset')  RESET
+
+else
+    form.alert__content(id='frmAlerts' method="post" action="/action/doUpdateAlertSettings")
+        input(type="hidden" name="action" value="removeJournalBookAlert")
+
+        .alert__freq
+            .input-group.left-side-label
+                block newContentAlertFormFirstElement
+                    label Frequency of alerts for article-based alerts
+                    select.jcf(name="period")
+                        each freq, l in freqs.freqs
+                            if data.currentPerson && data.currentPerson.alerts && data.currentPerson.alerts.frequency == freq
+                                option(value=freq.charAt(0) selected="selected") !{freq}
+                            else
+                                option(value=freq.charAt(0)) !{freq}
+        block alertFormats
+            .alert__format
+                .input-group.left-side-label
+                    label Choose an Email Format:
+                    .input-group.left-side-label
+                        -var checkboxText
+                        if (data.currentPerson && data.currentPerson.alerts && data.currentPerson.alerts.format != 'TEXT' && data.currentPerson.alerts.format != 'HTML')
+                            - checkboxText = 'TEXT'
+                        else
+                            - checkboxText = data.currentPerson.alerts.format
+
+                    label(class="radio--primary")
+                        input#alertFormat_text(type="radio" name="format" value="T" checked=checkboxText == 'TEXT')
+                        span(class="label-txt") Plain Text
+
+                    label(class="radio--primary")
+                        input#alertFormat_html(type="radio" name="format" value="H" checked=checkboxText == 'HTML')
+                        span(class="label-txt") HTML
+
+        block beforeList
+
+        block alertLists
+            h5.profile__heading.border-bottom Journal title A-Z
+            .table-responsive.separator
+                table.alert__list
+                    tbody
+                        tr
+                            td.table__mark
+                                label.checkbox--primary
+                                    input.select_all(type="checkbox" name="markall")
+                                    span
+                            td
+                                span Select All
+                        if(data.seriesList)
+                          each book, l in data.seriesList
+                            tr
+                                td.table__mark
+                                    label.checkbox--primary
+                                        if(book)
+                                          input(type="checkbox" id="check-"+book.code name="bookSeriesCode" value=book.code)
+                                        span
+                                td
+                                    if(book)
+                                      label(for="check-"+book.code)
+                                        a(href=book.bookSeriesUrl) !{book.title}
+
+                        if(data.journals)
+                          each toc, l in data.journals
+                            tr
+                                td.table__mark
+                                    label.checkbox--primary
+                                        if(toc)
+                                          input(type="checkbox" id="check-" + toc.code name="journalCode" value=toc.code)
+                                        span
+                                td
+                                    if(toc)
+                                      label(for="check-" + toc.code)
+                                        a(href=toc.bookSeriesUrl) !{toc.title}
+        block deleteButton
+            .form-btn
+                button.btn--inverse.extra-border(type="submit" id="removeJournal") Delete
